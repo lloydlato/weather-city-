@@ -37,6 +37,39 @@
         margin: 0;
         font-size: 2.5em;
       }
+      #search-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+      }
+      #city-input {
+        width: 300px;
+        padding: 10px;
+        border: 2px solid #5cc71e;
+        border-radius: 5px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s;
+      }
+      #city-input:focus {
+        border-color: #141514;
+      }
+      #search-button {
+        padding: 10px 20px;
+        margin-left: 10px;
+        background-color: #86a277;
+        color: rgba(17, 19, 17, 0.985);
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+      #search-button:hover {
+        background-color: #2e7c32;
+        transform: scale(1.05);
+      }
       #weather {
         text-align: center;
         margin: 20px 0;
@@ -56,45 +89,71 @@
       footer {
         background-color: #9c94a1;
         color: #0a0606;
-        padding: 5px;
+        padding: -5px;
         text-align: center;
-        border-radius:  20px;
-        margin-top: 1px;
-        margin: 30px;
+
+        margin-top: 100px;
+        margin-bottom: -30px;
         font-size: 30px;
-      }
-      @media (max-width: 600px) 
-      .container {
-        padding: 10px;
-      }
-      header h1 {
-        font-size: 2em;
-      } 
-      #weather h2 {
-        font-size: 1.1em;
-      }
-      #weather p {
-        font-size: 1em;
       }
       footer:hover {
         background-color: #40a848;
+      }
+      @media (max-width: 600px) {
+        .container {
+          padding: 10px;
+        }
+        header h1 {
+          font-size: 2em;
+        }
+        #weather h2 {
+          font-size: 1.1em;
+        }
+        #weather p {
+          font-size: 1em;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <header>
-        <h1>Weather Update - Iligan City, Philippines</h1>
+        <h1>Weather Update - Enter Your City</h1>
       </header>
+      <div id="search-section">
+        <input
+          type="text"
+          id="city-input"
+          placeholder="Enter city name..."
+          aria-label="Enter city name"
+        />
+        <button id="search-button">Get Weather</button>
+      </div>
       <div id="weather"></div>
     </div>
     <footer>
-      <p>Lloyd A. Lato - August 12, 2024</p>
+      <p>(Lato , Lloyd A.) - date: <span id="current-date"></span></p>
     </footer>
     <script>
-      document.addEventListener("DOMContentLoaded", async function () {
+      document.addEventListener("DOMContentLoaded", function () {
+        const footerDate = document.getElementById("current-date");
+        const now = new Date();
+        const options = { year: "numeric", month: "short", day: "numeric" };
+        footerDate.textContent = now.toLocaleDateString("en-US", options);
+      });
+      document
+        .getElementById("search-button")
+        .addEventListener("click", function () {
+          const cityName = document.getElementById("city-input").value.trim();
+          if (cityName) {
+            getWeather(cityName);
+          } else {
+            alert("Please enter a city name.");
+          }
+        });
+
+      async function getWeather(cityName) {
         const apiKey = "cc68bd4d6b26495ba2d60337241208";
-        const cityName = "Iligan";
         const apiEndpoint = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${cityName}&days=7`;
 
         try {
@@ -128,27 +187,23 @@
             <p><strong>Temperature:</strong> ${currentWeather.temp_c}°C</p>
             <p><strong>Weather:</strong> ${currentWeather.condition.text}</p>
             <p><strong>Humidity:</strong> ${currentWeather.humidity}%</p>
-        `;
+          `;
 
           forecast.forEach((day) => {
             const dayDate = new Date(day.date);
             const dayName = dayDate.toLocaleDateString("en-US", {
               weekday: "long",
             });
-            const dayDiv = document.getElementById(
-              `day-${dayDate
-                .toLocaleDateString("en-GB", { weekday: "short" })
-                .toLowerCase()}`
-            );
-            if (dayDiv) {
-              dayDiv.innerHTML = `
-                    <p>${dayName}</p>
-                    <p><time datetime="${day.date}">${day.date}</time></p>
-                    <p><strong>Max Temp:</strong> ${day.day.maxtemp_c}°C</p>
-                    <p><strong>Min Temp:</strong> ${day.day.mintemp_c}°C</p>
-                    <p><strong>Weather:</strong> ${day.day.condition.text}</p>
-                `;
-            }
+            const dayDiv = document.createElement("div");
+            dayDiv.classList.add("day");
+            dayDiv.innerHTML = `
+              <p>${dayName}</p>
+              <p><time datetime="${day.date}">${day.date}</time></p>
+              <p><strong>Max Temp:</strong> ${day.day.maxtemp_c}°C</p>
+              <p><strong>Min Temp:</strong> ${day.day.mintemp_c}°C</p>
+              <p><strong>Weather:</strong> ${day.day.condition.text}</p>
+            `;
+            weatherContainer.appendChild(dayDiv);
           });
         } catch (error) {
           const weatherContainer = document.getElementById("weather");
@@ -156,7 +211,11 @@
 
           console.error("Error fetching weather data:", error);
         }
-      });
+      }
+    </script>
+  </body>
+</html>
+
     </script>
   </body>
 </html>
